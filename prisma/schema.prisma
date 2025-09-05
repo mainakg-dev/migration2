@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Egender {
+  male
+  female
+  other
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  empId         String
+  ceId          String
+  fName         String
+  mName         String?
+  lName         String
+  nationality   String?
+  dob           DateTime?
+  gender        Egender?
+  maritalStatus String?
+  userMobileNo  String    @unique
+  email         String    @unique
+  password      String
+  fatherName    String?
+  motherName    String?
+  jobTitle      String?
+  workStationId String?
+
+  supervisorId Int?
+  supervisor   User? @relation("Supervisor", fields: [supervisorId], references: [id])
+
+  userRole Int[] @default([3])
+
+  departmentId Int?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  branchId Int?
+  branch   OffcBranch? @relation(fields: [branchId], references: [id])
+
+  aaddharNo        String    @unique
+  panNo            String    @unique
+  bloodGrp         String?
+  uanNo            String?
+  passportNo       String?
+  healthCardNo     String?
+  bankName         String
+  ifscCode         String
+  bnkacuntNo       String
+  grade            String?
+  designation      String?
+  joiningDate      DateTime?
+  confirmationdate DateTime?
+
+  confirmedById Int?
+  confirmedBy   User? @relation("ConfirmedBy", fields: [confirmedById], references: [id])
+
+  modifiedById Int?
+  modifiedBy   User? @relation("ModifiedBy", fields: [modifiedById], references: [id])
+
+  createdById Int?
+  createdBy   User? @relation("CreatedBy", fields: [createdById], references: [id])
+
+  payrollID Int?
+  payroll   Payrolldetail? @relation(fields: [payrollID], references: [id])
+
+  lastModified        DateTime?
+  empStatus           Int       @default(1)
+  payrollAssignStatus Int       @default(0)
+
+  nominee   Nominee? @relation(fields: [nomineeId], references: [id])
+  nomineeId Int?
+
+  permanentAddress   Address? @relation("PermanentAddress", fields: [permanentAddressId], references: [id])
+  permanentAddressId Int?
+
+  currentAddress   Address? @relation("CurrentAddress", fields: [currentAddressId], references: [id])
+  currentAddressId Int?
+
+  skils        UserSkils[]   @relation("UserSkills")
+  educations   Education[]   @relation("UserEducation")
+  certificates Certificate[] @relation("UserCertificate")
+  languages    Language[]    @relation("UserLanguage")
+
+  profilePicEnabled  Boolean @default(false)
+  profilePicFileName String?
+  fileDir            String?
+
+  UserConfirmed User[] @relation("ConfirmedBy")
+
+  UserModified User[] @relation("ModifiedBy")
+
+  UserSup User[] @relation("Supervisor")
+
+  UserCreateBy User[] @relation("CreatedBy")
+}
+
+model Nominee {
+  id              Int    @id @default(autoincrement())
+  status          Int
+  nomineeName     String
+  nonineeAaaddhar String
+
+  User User[]
+}
+
+model Payrolldetail {
+  id Int @id @default(autoincrement())
+
+  User User[]
+}
+
+model Address {
+  id       Int    @id @default(autoincrement())
+  address  String
+  city     String
+  district String
+  state    String
+  country  String
+  pincode  String
+
+  UserCurrAdd User[] @relation("CurrentAddress")
+
+  UserPerAdd User[] @relation("PermanentAddress")
+}
+
+model UserSkils {
+  id          Int    @id @default(autoincrement())
+  skillId     String
+  skillName   String
+  description String
+
+  userId Int
+  user   User @relation("UserSkills", fields: [userId], references: [id])
+}
+
+model Department {
+  id Int @id @default(autoincrement())
+
+  User User[]
+}
+
+model OffcBranch {
+  id Int @id @default(autoincrement())
+
+  User User[]
+}
+
+model Education {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  user   User @relation("UserEducation", fields: [userId], references: [id])
+}
+
+model Certificate {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  user   User @relation("UserCertificate", fields: [userId], references: [id])
+}
+
+model Language {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  user   User @relation("UserLanguage", fields: [userId], references: [id])
+}
