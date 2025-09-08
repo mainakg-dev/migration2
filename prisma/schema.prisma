@@ -8,42 +8,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Egender {
-  male
-  female
-  other
-}
 
 model User {
-  id            Int       @id @default(autoincrement())
-  empId         String
-  ceId          String
-  fName         String
-  mName         String?
-  lName         String
-  nationality   String?
-  dob           DateTime?
-  gender        Egender?
-  maritalStatus String?
-  userMobileNo  String    @unique
-  email         String    @unique
-  password      String
-  fatherName    String?
-  motherName    String?
-  jobTitle      String?
-  workStationId String?
-
-  supervisorId Int?
-  supervisor   User? @relation("Supervisor", fields: [supervisorId], references: [id])
-
-  userRole Int[] @default([3])
-
-  departmentId Int?
-  department   Department? @relation(fields: [departmentId], references: [id])
-
-  branchId Int?
-  branch   OffcBranch? @relation(fields: [branchId], references: [id])
-
+  id               Int       @id @default(autoincrement())
+  empId            String
+  ceId             String
+  fName            String
+  mName            String?
+  lName            String
+  nationality      String?
+  dob              DateTime?
+  gender           Egender?
+  maritalStatus    String?
+  userMobileNo     String    @unique
+  email            String    @unique
+  password         String
+  fatherName       String?
+  motherName       String?
+  jobTitle         String?
+  workStationId    String?
   aaddharNo        String    @unique
   panNo            String    @unique
   bloodGrp         String?
@@ -58,6 +41,20 @@ model User {
   joiningDate      DateTime?
   confirmationdate DateTime?
 
+  supervisorId Int?
+  supervisor   User? @relation("Supervisor", fields: [supervisorId], references: [id])
+
+  roleId Int
+  role   Role @relation(fields: [roleId], references: [id])
+
+  payslipDetails Payslip[]
+
+  departmentId Int?
+  department   Department? @relation("UserInwhichDept", fields: [departmentId], references: [id])
+
+  branchId Int?
+  branch   OffcBranch? @relation(fields: [branchId], references: [id])
+
   confirmedById Int?
   confirmedBy   User? @relation("ConfirmedBy", fields: [confirmedById], references: [id])
 
@@ -70,9 +67,10 @@ model User {
   payrollID Int?
   payroll   Payrolldetail? @relation(fields: [payrollID], references: [id])
 
-  lastModified        DateTime?
-  empStatus           Int       @default(1)
-  payrollAssignStatus Int       @default(0)
+  lastModified DateTime?
+
+  empStatus           UserStatus          @default(ACTIVE)
+  payrollAssignStatus PayrollAssignStatus @default(ACTIVE)
 
   nominee   Nominee? @relation(fields: [nomineeId], references: [id])
   nomineeId Int?
@@ -93,13 +91,137 @@ model User {
   fileDir            String?
 
   UserConfirmed User[] @relation("ConfirmedBy")
+  UserModified  User[] @relation("ModifiedBy")
+  UserSup       User[] @relation("Supervisor")
+  UserCreateBy  User[] @relation("CreatedBy")
 
-  UserModified User[] @relation("ModifiedBy")
+  allowanceCreated   allowanceType[] @relation("userCreateAllowanceType")
+  deductionCreated   deductionType[] @relation("userCreateDeductionType")
+  departmentsCreated Department[]    @relation("userCreateDept")
+  payrollCreated     Payrolldetail[] @relation("payrollCreateByUser")
+  payrollUpdated     Payrolldetail[] @relation("payrollUpdateByUser")
 
-  UserSup User[] @relation("Supervisor")
+  assignedProjects    Project[]
+  ProjectClientCreate ProjectClient[] @relation("userCreateClient")
+  ProjectClientUpdate ProjectClient[] @relation("userUpdateClient")
+  leaveType           leaveType[]
+  Timesheets          Timesheets[]
+  ExpenselogApplied   Expenselog[]    @relation("UserAppliedExpenseLog")
+  ExpenselogUpdated   Expenselog[]    @relation("UserUpdatedExpenseLog")
+  salarylogs          salarylogs[]
+  leavemaster         leavemaster[]
 
-  UserCreateBy User[] @relation("CreatedBy")
+  leaveAssignUserCreated  leaveAssignUser[] @relation("UserCreatedleaveAssignUser")
+  leaveAssignUserUpdated  leaveAssignUser[] @relation("UserUpdatedleaveAssignUser")
+  leaveAssignUserAssigned leaveAssignUser[] @relation("UserAssignedleaveAssignUser")
+  leavelog_appliedby      leavelog[]        @relation("appliedByuserId")
+  leavelog_updatedBy      leavelog[]        @relation("updatedByuserId")
 }
+
+model salarylogs {
+  id                  Int  @id @default(autoincrement())
+  salaryInitiatedBy   User @relation(fields: [salaryInitiatedById], references: [id])
+  salaryInitiatedById Int
+
+  salaryPaydetailIdList Payslip[]
+  totalAmount           Int
+  issuedDate            DateTime
+  salaryYearMonth       DateTime
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+model Timesheets {
+  id       Int  @id @default(autoincrement())
+  empid    Int
+  employee User @relation(fields: [empid], references: [id])
+
+  projectId Int
+  project   Project @relation(fields: [projectId], references: [id])
+
+  date        DateTime
+  enterTime   DateTime
+  exitTime    DateTime
+  task        String
+  description String
+}
+
+model Expenselog {
+  id          Int  @id @default(autoincrement())
+  appliedById Int
+  appliedBy   User @relation("UserAppliedExpenseLog", fields: [appliedById], references: [id])
+
+  remarks          String
+  description      String
+  fileDir          String
+  billFilesEnabled Boolean
+  billFiles        String[]
+  updatedOn        DateTime
+  totalAmount      Int
+  status           Int
+  updatedBy        User          @relation("UserUpdatedExpenseLog", fields: [updatedById], references: [id])
+  updatedById      Int
+  expenses         expenceList[]
+}
+
+model expenceList {
+  id           Int        @id @default(autoincrement())
+  date         DateTime
+  amount       Int
+  descriptions String
+  expenseid    Int
+  expense      Expenselog @relation(fields: [expenseid], references: [id])
+}
+
+
+model leaveType {
+  id          Int    @id @default(autoincrement())
+  name        String
+  shortname   Leaves
+  createdBy   User   @relation(fields: [createdById], references: [id])
+  createdById Int
+  description String
+}
+
+model financeyearlists {
+  id              Int      @id @default(autoincrement())
+  financeyearname String
+  startDate       DateTime
+  endDate         DateTime
+  activeStatus    Int
+}
+
+model Project {
+  id              Int            @id @default(autoincrement())
+  projectCode     String
+  projectName     String
+  status          ProjectStatus
+  assignUsers     User[]
+  departmentId    String
+  department      Department     @relation(fields: [departmentId], references: [dptId])
+  ProjectClient   ProjectClient? @relation(fields: [projectClientId], references: [id])
+  projectClientId Int?
+  Timesheets      Timesheets[]
+}
+
+model ProjectClient {
+  id            Int       @id @default(autoincrement())
+  clientCode    String
+  clientName    String
+  address       Address   @relation(fields: [addressId], references: [id])
+  clientEmailId String
+  projects      Project[]
+  description   String
+
+  createdBy  User @relation("userCreateClient", fields: [createdById], references: [id])
+  modifiedBy User @relation("userUpdateClient", fields: [modifiedById], references: [id])
+
+  addressId    Int
+  createdById  Int
+  modifiedById Int
+}
+
+
 
 model Nominee {
   id              Int    @id @default(autoincrement())
@@ -113,7 +235,56 @@ model Nominee {
 model Payrolldetail {
   id Int @id @default(autoincrement())
 
-  User User[]
+  createdBy   User @relation("payrollCreateByUser", fields: [createdById], references: [id])
+  createdById Int
+  updatedBy   User @relation("payrollUpdateByUser", fields: [updatedById], references: [id])
+  updatedById Int
+
+  payrollUser User[] // fix
+
+  allowances Allowance[]
+  deductions Deduction[]
+
+  upDateOn        DateTime @updatedAt
+  isPayableStatus Int      @default(1)
+  baseSalary      Int
+
+  payslips Payslip[]
+}
+
+model Payslip {
+  id         Int  @id @default(autoincrement())
+  employeeId Int
+  employee   User @relation(fields: [employeeId], references: [id])
+
+  baseSalary    Int
+  gettingAmount Int
+  amountInWords Int
+
+  createdAt DateTime @default(now())
+
+  payrollId      Int
+  payrollDetails Payrolldetail @relation(fields: [payrollId], references: [id])
+
+  salarylogs   salarylogs? @relation(fields: [salarylogsId], references: [id])
+  salarylogsId Int?
+}
+
+model Allowance {
+  id     Int        @id @default(autoincrement())
+  name   Allowances
+  amount Int
+
+  payrollDetail   Payrolldetail @relation(fields: [payrollDetailId], references: [id])
+  payrollDetailId Int
+}
+
+model Deduction {
+  id              Int           @id @default(autoincrement())
+  name            Deductions
+  amount          Int
+  payrollDetail   Payrolldetail @relation(fields: [payrollDetailId], references: [id])
+  payrollDetailId Int
 }
 
 model Address {
@@ -126,8 +297,10 @@ model Address {
   pincode  String
 
   UserCurrAdd User[] @relation("CurrentAddress")
+  UserPerAdd  User[] @relation("PermanentAddress")
 
-  UserPerAdd User[] @relation("PermanentAddress")
+  OfficeAdd     OffcBranch[] // fix 
+  ProjectClient ProjectClient[]
 }
 
 model UserSkils {
@@ -141,31 +314,213 @@ model UserSkils {
 }
 
 model Department {
-  id Int @id @default(autoincrement())
+  id          Int    @id @default(autoincrement())
+  dptId       String @unique
+  dptName     String
+  description String
 
-  User User[]
+  createdBy   User @relation("userCreateDept", fields: [createdByid], references: [id])
+  createdByid Int
+
+  User     User[]    @relation("UserInwhichDept")
+  projects Project[]
 }
 
 model OffcBranch {
-  id Int @id @default(autoincrement())
+  id          Int    @id @default(autoincrement())
+  officeName  String
+  officeCode  String
+  description String
+  remarks     String
 
-  User User[]
+  address   Address @relation(fields: [addressId], references: [id])
+  addressId Int
+
+  empList User[]
 }
 
 model Education {
-  id     Int  @id @default(autoincrement())
-  userId Int
-  user   User @relation("UserEducation", fields: [userId], references: [id])
+  id          Int    @id @default(autoincrement())
+  eduName     String
+  description String
+  userId      Int
+  user        User   @relation("UserEducation", fields: [userId], references: [id])
 }
 
 model Certificate {
-  id     Int  @id @default(autoincrement())
-  userId Int
-  user   User @relation("UserCertificate", fields: [userId], references: [id])
+  id          Int    @id @default(autoincrement())
+  cerName     String
+  description String
+  userId      Int
+  user        User   @relation("UserCertificate", fields: [userId], references: [id])
 }
 
 model Language {
-  id     Int  @id @default(autoincrement())
-  userId Int
-  user   User @relation("UserLanguage", fields: [userId], references: [id])
+  id          Int    @id @default(autoincrement())
+  language    String
+  description String
+  userId      Int
+  user        User   @relation("UserLanguage", fields: [userId], references: [id])
+}
+
+model allowanceType {
+  id          Int        @id @default(autoincrement())
+  name        String
+  shortName   Allowances
+  createdBy   User       @relation("userCreateAllowanceType", references: [id], fields: [createdbyId])
+  createdbyId Int
+  description String
+}
+
+model deductionType {
+  id          Int        @id @default(autoincrement())
+  name        String
+  shortName   Deductions
+  createdBy   User       @relation("userCreateDeductionType", references: [id], fields: [createdbyId])
+  createdbyId Int
+  description String
+}
+
+
+
+model leavemaster {
+  id            Int      @id @default(autoincrement())
+  financialYear DateTime
+  startDate     DateTime
+  endDate       DateTime
+  description   String
+
+  createdBy   User         @relation(fields: [createdById], references: [id])
+  createdById Int
+  leave_count leaveCount[]
+}
+
+model leaveCount {
+  id        Int    @id @default(autoincrement())
+  leavetype Leaves
+  value     Int
+
+  leavemaster   leavemaster @relation(fields: [leavemasterId], references: [id])
+  leavemasterId Int
+}
+
+model leaveAssignUser {
+  id            Int    @id @default(autoincrement())
+  financialYear String
+
+  createdBy  User @relation("UserCreatedleaveAssignUser", fields: [createdBy_userId], references: [id])
+  assignUser User @relation("UserAssignedleaveAssignUser", fields: [assignUser_userId], references: [id])
+  updatedBy  User @relation("UserUpdatedleaveAssignUser", fields: [updatedBy_userid], references: [id])
+
+  createdBy_userId  Int
+  assignUser_userId Int
+  updatedBy_userid  Int
+  updatedOn         DateTime
+  description       String
+
+  leaveMaintain leaveMaintain[]
+}
+
+model leaveMaintain {
+  id                Int             @id @default(autoincrement())
+  key               String
+  value             Int
+  leaveAssignUser   leaveAssignUser @relation(fields: [leaveAssignUserId], references: [id])
+  leaveAssignUserId Int
+}
+
+model leavelog {
+  id        Int  @id @default(autoincrement())
+  appliedBy User @relation("appliedByuserId", fields: [appliedByuserId], references: [id])
+  updatedBy User @relation("updatedByuserId", fields: [updatedByuserId], references: [id])
+
+  leavetype   Leaves
+  startDate   DateTime
+  endDate     DateTime
+  leaveDays   Int
+  status      Int
+  updatedOn   DateTime
+  description DateTime
+
+  appliedByuserId Int
+  updatedByuserId Int
+}
+
+model Role {
+  id        Int        @id @default(autoincrement())
+  name      ERole      @unique
+  roleMenus RoleMenu[]
+  users     User[]
+}
+
+model MenuItem {
+  id        Int        @id @default(autoincrement())
+  label     String
+  icon      String
+  path      String
+  parentId  Int?
+  parent    MenuItem?  @relation("MenuItemToMenuItem", fields: [parentId], references: [id])
+  children  MenuItem[] @relation("MenuItemToMenuItem")
+  roleMenus RoleMenu[]
+}
+
+model RoleMenu {
+  roleId     Int
+  menuItemId Int
+
+  role     Role     @relation(fields: [roleId], references: [id])
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@id([roleId, menuItemId])
+}
+
+
+enum Allowances {
+  MA
+  HRA
+  FA
+}
+
+enum Deductions {
+  PF
+  IT
+  PT
+}
+
+enum UserStatus {
+  ACTIVE
+  ONHOLD
+  TERMINATED
+  RESIGNED
+}
+
+enum PayrollAssignStatus {
+  ACTIVE
+  PENDING
+}
+
+enum ProjectStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  INACTIVE
+}
+
+enum Leaves {
+  CL
+  PL
+  ML
+}
+
+
+enum Egender {
+  male
+  female
+  other
+}
+
+enum ERole {
+  USER
+  ADMIN
+  MANAGER
 }
