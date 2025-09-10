@@ -21,4 +21,5 @@
 | 14 |payrolldetails | removed allowances & reduction array |                        |                            |                       |
 | 15 | client         | removed project array and added relation to address table |  |                            |                         |
 | 16 | salarylogs     | pointed salaryPaydetailIdList from salarypaydetails to payslip |                          |                          |
-| 17 | user  | pointed to nominee, changed dob data type to Date |         |             |            |
+| 17 | user  | pointed to nominee, changed dob data type to Date, modified user Role |         |             |            |
+| 18 |userRole| Added junction table to store roles | not existed | userId, roleId | |
