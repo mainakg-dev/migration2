@@ -82,10 +82,10 @@ model User {
   currentAddress   Address? @relation("CurrentAddress", fields: [currentAddressId], references: [id])
   currentAddressId String?
 
-  skils        UserSkils[]   @relation("UserSkills")
-  educations   Education[]   @relation("UserEducation")
+  skils        UserSkils[]   
+  educations   Education[]  
   certificates Certificate[] @relation("UserCertificate")
-  languages    Language[]    @relation("UserLanguage")
+  languages    Language[]
 
   profilePicEnabled  Boolean @default(false)
   profilePicFileName String?
@@ -273,15 +273,13 @@ model ProjectClient {
   id            String    @id @default(uuid())
   clientCode    String
   clientName    String
-  address       Address   @relation(fields: [addressId], references: [id])
+  address       String
   clientEmailId String
   projects      Project[]
   description   String
 
   createdBy  User @relation("userCreateClient", fields: [createdById], references: [id])
   modifiedBy User @relation("userUpdateClient", fields: [modifiedById], references: [id])
-
-  addressId    String
   createdById  String
   modifiedById String
 }
@@ -365,9 +363,6 @@ model Address {
 
   UserCurrAdd User[] @relation("CurrentAddress")
   UserPerAdd  User[] @relation("PermanentAddress")
-
-  OfficeAdd     OffcBranch[] 
-  ProjectClient ProjectClient[]
 }
 
 model UserSkils {
@@ -376,8 +371,7 @@ model UserSkils {
   skillName   String
   description String
 
-  userId String
-  user   User   @relation("UserSkills", fields: [userId], references: [id])
+  user   User[]
 }
 
 model Department {
@@ -403,9 +397,7 @@ model OffcBranch {
   createdbyId String
   createdBy   User    @relation("userCreatedbranch", fields: [createdbyId], references: [id])
 
-  address     Address @relation(fields: [addressId], references: [id])
-  addressId   String
-
+  address     String
   empList User[]
   
 }
@@ -414,8 +406,8 @@ model Education {
   id          String @id @default(uuid())
   eduName     String
   description String
-  userId      String
-  user        User   @relation("UserEducation", fields: [userId], references: [id])
+
+  user        User[]
 }
 
 model Certificate {
@@ -430,8 +422,8 @@ model Language {
   id          String @id @default(uuid())
   language    String
   description String
-  userId      String
-  user        User   @relation("UserLanguage", fields: [userId], references: [id])
+
+  user        User[]
 }
 
 model allowanceType {
@@ -519,7 +511,7 @@ model leavelog {
 
 model Role {
   id        String     @id @default(uuid())
-  name      ERole      @unique
+  name      String      @unique
   roleMenus RoleMenu[]
   userRoles userRole[]
 }
@@ -584,11 +576,6 @@ enum Egender {
   other
 }
 
-enum ERole {
-  USER
-  ADMIN
-  MANAGER
-}
 
 enum TaskPriority {
   LOW
