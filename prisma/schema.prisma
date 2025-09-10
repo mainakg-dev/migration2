@@ -84,7 +84,7 @@ model User {
 
   skils        UserSkils[]   
   educations   Education[]  
-  certificates Certificate[] @relation("UserCertificate")
+  certificates Certificate[] 
   languages    Language[]
 
   profilePicEnabled  Boolean @default(false)
@@ -222,6 +222,7 @@ model Task {
   project   Project @relation(fields: [projectId], references: [id])
 }
 
+//user,project,
 model Expenselog {
   id          String @id @default(uuid())
   appliedById String
@@ -251,7 +252,7 @@ model expenceList {
   expenseid    String
   expense      Expenselog @relation(fields: [expenseid], references: [id])
 }
-
+//user
 model leaveType {
   id          String @id @default(uuid())
   name        String
@@ -268,7 +269,7 @@ model financeyearlists {
   endDate         DateTime
   activeStatus    Int
 }
-
+//user
 model ProjectClient {
   id            String    @id @default(uuid())
   clientCode    String
@@ -292,7 +293,7 @@ model Nominee {
 
   User User?
 }
-
+//user
 model Payrolldetail {
   id String @id @default(uuid())
 
@@ -313,7 +314,7 @@ model Payrolldetail {
 
   payslips Payslip[]
 }
-
+//user
 model Payslip {
   id         String @id @default(uuid())
   employeeId String
@@ -374,6 +375,8 @@ model UserSkils {
   user   User[]
 }
 
+
+// user 
 model Department {
   id          String @id @default(uuid())
   dptId       String @unique
@@ -386,7 +389,7 @@ model Department {
   User     User[]    @relation("UserInwhichDept")
   projects Project[]
 }
-
+//user
 model OffcBranch {
   id          String  @id @default(uuid())
   officeName  String
@@ -414,8 +417,8 @@ model Certificate {
   id          String @id @default(uuid())
   cerName     String
   description String
-  userId      String
-  user        User   @relation("UserCertificate", fields: [userId], references: [id])
+  user     User[]
+  
 }
 
 model Language {
@@ -425,7 +428,7 @@ model Language {
 
   user        User[]
 }
-
+//user
 model allowanceType {
   id          String @id @default(uuid())
   name        String
@@ -434,7 +437,7 @@ model allowanceType {
   createdbyId String
   description String
 }
-
+//user
 model deductionType {
   id          String @id @default(uuid())
   name        String
@@ -443,7 +446,7 @@ model deductionType {
   createdbyId String
   description String
 }
-
+//user
 model leavemaster {
   id            String   @id @default(uuid())
   financialYear String
@@ -466,7 +469,7 @@ model leaveCount {
   leavemaster   leavemaster @relation(fields: [leavemasterId], references: [id])
   leavemasterId String
 }
-
+//user
 model leaveAssignUser {
   id            String @id @default(uuid())
   financialYear String
@@ -537,6 +540,7 @@ model RoleMenu {
   @@id([roleId, menuItemId])
 }
 
+// user
 model EventList {
   id           String   @id @default(uuid())
   eventId      String
