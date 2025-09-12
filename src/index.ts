@@ -303,7 +303,11 @@ async function leaveAssignUser() {
   const c = allmenus.find();
 
   for await (const doc of c) {
-    const tempArr = doc.leaveField;
+    const tempArr: { _id: any; key: string; value: number }[] = doc.leaveField;
+
+    const submitArr = tempArr.map(({ _id, ...rest }) => ({
+      ...rest,
+    }));
 
     await prisma.leaveAssignUser.create({
       data: {
@@ -312,13 +316,12 @@ async function leaveAssignUser() {
         description: doc.description,
         leaveMaintain: {
           createMany: {
-            data: tempArr,
+            data: submitArr,
           },
         },
       },
     });
   }
-
   console.log("leaveAssignUser done");
 }
 
